@@ -1,0 +1,2 @@
+http://www.devgi.com/2018/11/install-mysql-docker-windows.html
+docker run --name mysql-demo -e MYSQL_USER=root -e MYSQL_PASSWORD=root -e MYSQL_DATABASE=demodb -p 3306:3306 -d mysql/mysql-server:latest
