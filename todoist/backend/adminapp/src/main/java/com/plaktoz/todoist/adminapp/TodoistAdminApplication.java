@@ -14,8 +14,13 @@ public class TodoistAdminApplication {
 	}
 
 	@GetMapping("/")
+    public String helloRoot() {
+        return "adminapp root!";
+    }
+	
+	@GetMapping("/hello")
     public String hello() {
-        return "Hello, World!";
+        return "adminapp Hello, World!";
     }
 
 }

@@ -13,9 +13,4 @@ public class TodoistappApplication {
 		SpringApplication.run(TodoistappApplication.class, args);
 	}
 
-	@GetMapping("/")
-    public String hello() {
-        return "Hello, World!";
-    }
-
 }
