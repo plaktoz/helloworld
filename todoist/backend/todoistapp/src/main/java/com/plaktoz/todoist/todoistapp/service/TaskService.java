@@ -1,7 +1,7 @@
-package com.plaktoz.todoist.task.todoistapp.service;
+package com.plaktoz.todoist.todoistapp.service;
 
-import com.plaktoz.todoist.task.todoistapp.domain.TaskEntity;
-import com.plaktoz.todoist.task.todoistapp.repository.TaskRepository;
+import com.plaktoz.todoist.todoistapp.domain.TaskEntity;
+import com.plaktoz.todoist.todoistapp.repository.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -16,11 +16,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @Service
 @Transactional // default: write transactions; we’ll override reads with readOnly
 public class TaskService {
 
-    private final TaskRepository repo;
+    // @Autowired
+    private TaskRepository repo;
 
     public TaskService(TaskRepository repo) {
         this.repo = repo;

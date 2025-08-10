@@ -1,9 +1,17 @@
 package com.plaktoz.todoist.todoistapp.controller;
 
-import com.plaktoz.todoist.task.todoistapp.domain.TaskEntity;
-import com.plaktoz.todoist.task.todoistapp.service.TaskService;
+import com.plaktoz.todoist.todoistapp.domain.TaskEntity;
+import com.plaktoz.todoist.todoistapp.service.TaskService;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
+
+
+
+
+
+
+
+
 
 
 
@@ -19,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/tasks")
 public class TaskController {
 
-    private final TaskService svc;
+    private TaskService svc;
 
     public TaskController(TaskService svc) { this.svc = svc; }
 

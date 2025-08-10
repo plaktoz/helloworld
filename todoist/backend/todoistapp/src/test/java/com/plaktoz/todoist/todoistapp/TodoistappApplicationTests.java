@@ -2,8 +2,8 @@ package com.plaktoz.todoist.todoistapp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.plaktoz.todoist.task.todoistapp.domain.TaskEntity;
-import com.plaktoz.todoist.task.todoistapp.repository.TaskRepository;
+import com.plaktoz.todoist.todoistapp.domain.TaskEntity;
+import com.plaktoz.todoist.todoistapp.repository.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles;
             "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration"
     }
 )
+// @ComponentScan(basePackages = {"com.plaktoz.todoist.todoistapp", "com.plaktoz.todoist.todoistapp.service"})
 // @EntityScan(basePackages = "com.plaktoz.todoist.todoistapp.task")
 @ActiveProfiles("test") // will also load application-test.yml if present
 class TodoistappApplicationTests {
