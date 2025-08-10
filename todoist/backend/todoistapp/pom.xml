@@ -7,15 +7,16 @@
     <groupId>com.plaktoz.todoist</groupId>
     <artifactId>todoistapp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>spring-boot-hello</name>
-    <description>Hello World Spring Boot Project</description>
+    <name>todoist app</name>
+    <description>todoist app</description>
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>com.plaktoz.todoist</groupId>
+        <artifactId>todoist-parent</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+        <!-- <relativePath/> lookup parent from repository -->
     </parent>
 
     <properties>
