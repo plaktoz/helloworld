@@ -1,28 +1,105 @@
-version: "3.8"
+#version: "3.8"
 
 services:
+  # =========================
+  # Datastores (internal)
+  # =========================
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: todoist
+      MYSQL_USER: todo
+      MYSQL_PASSWORD: todo_pwd
+      MYSQL_ROOT_PASSWORD: root_pwd
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    #command: --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks: [springnet]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    # Uncomment only if you want host access for debugging
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks: [springnet]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # Uncomment only if you want host access for debugging
+    ports:
+      - "6379:6379"
+
+  # =========================
+  # Apps
+  # =========================
+  adminapp:
+    image: adminapp-image
+    container_name: adminapp
+    build:
+      context: ./adminapp
+    networks: [springnet]
+    expose:
+      - "8080"       # internal-only
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # --- JDBC ---
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/todoist?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: todo
+      SPRING_DATASOURCE_PASSWORD: todo_pwd
+      # --- Redis ---
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      # Optional: JPA/Hibernate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+
   todoistapp:
     image: todoistapp-image
     container_name: todoistapp
     build:
       context: ./todoistapp
     ports:
-      - "8080:8080"  # Expose to host
-    networks:
-      - springnet
+      - "8080:8080"  # exposed to host
+    networks: [springnet]
     depends_on:
-      - adminapp
-
-  adminapp:
-    image: adminapp-image
-    container_name: adminapp
-    build:
-      context: ./adminapp
-    networks:
-      - springnet
-    expose:
-      - "8080"  # Makes port visible only inside the network
+      adminapp:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # --- If this app also needs DB/Redis, wire it too ---
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/todoist?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: todo
+      SPRING_DATASOURCE_PASSWORD: todo_pwd
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      # --- Internal call to adminapp ---
+      APP_WEBCLIENT_CALLAPP2: http://adminapp:8080/hello
 
 networks:
   springnet:
     driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
