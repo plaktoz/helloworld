@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: todoistapp
+
+app:
+  webclient:
+    callapp2: http://adminapp:8080/hello
+
+logging:
+  level:
+    root: INFO

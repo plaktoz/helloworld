@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  todoistapp:
+    image: todoistapp-image
+    container_name: todoistapp
+    build:
+      context: ./todoistapp
+    ports:
+      - "8080:8080"  # Expose to host
+    networks:
+      - springnet
+    depends_on:
+      - adminapp
+
+  adminapp:
+    image: adminapp-image
+    container_name: adminapp
+    build:
+      context: ./adminapp
+    networks:
+      - springnet
+    expose:
+      - "8080"  # Makes port visible only inside the network
+
+networks:
+  springnet:
+    driver: bridge
