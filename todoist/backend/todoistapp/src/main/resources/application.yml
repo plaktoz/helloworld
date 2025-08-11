@@ -14,13 +14,10 @@ spring:
       host: ${SPRING_DATA_REDIS_HOST:redis}
       port: ${SPRING_DATA_REDIS_PORT:6379}
 
-# app:
-#   webclient:
-#     callapp2: http://adminapp:8080/hello
 app:
   webclient:
     callapp2: ${APP_WEBCLIENT_CALLAPP2:http://adminapp:8080/hello}
 
-logging:
-  level:
-    root: INFO
+#logging:
+#  level:
+#    root: INFO

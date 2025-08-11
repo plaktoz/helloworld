@@ -1,6 +1,7 @@
 # TodoistApp - Spring Boot + Docker Hello World
 
-This is a minimal Spring Boot application that returns `Hello, World!` on the root endpoint (`/`). It is containerized using Docker and can be run locally.
+This is a minimal Spring Boot application that returns `Hello, World!` on the root endpoint (`/`). It is containerized
+using Docker and can be run locally.
 
 ---
 

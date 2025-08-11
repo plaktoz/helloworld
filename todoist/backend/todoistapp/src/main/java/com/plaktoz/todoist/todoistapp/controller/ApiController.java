@@ -1,13 +1,12 @@
 package com.plaktoz.todoist.todoistapp.controller;
 
-import org.slf4j.*;
+import com.plaktoz.todoist.todoistapp.config.WebClientProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import com.plaktoz.todoist.todoistapp.config.WebClientProperties;
-
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -18,13 +17,13 @@ public class ApiController {
     private final WebClientProperties props;
 
     private static final Logger log = LoggerFactory.getLogger(ApiController.class);
-    
+
 
     public ApiController(WebClient webClient, WebClientProperties props) {
         this.webClient = webClient;
         this.props = props;
     }
-    
+
     @GetMapping("/")
     public String hello() {
         return "Hello, World!";

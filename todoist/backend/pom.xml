@@ -1,23 +1,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.plaktoz.todoist</groupId>
     <artifactId>todoist-parent</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
+
     <modules>
-        <module>adminapp</module>
+        <module>commonlib</module>
         <module>todoistapp</module>
+        <module>adminapp</module>
     </modules>
 
     <properties>
         <java.version>21</java.version>
         <spring.boot.version>3.5.4</spring.boot.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
     </properties>
 
+    <!-- Manage dependency versions via Boot BOM -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -31,11 +34,24 @@
     </dependencyManagement>
 
     <build>
+        <!-- Manage plugin versions here (since we’re not using Boot's parent POM) -->
         <pluginManagement>
             <plugins>
+                <!-- Spring Boot packaging/repackage -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+                </plugin>
+
+                <!-- Ensure Java 21 compilation everywhere -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

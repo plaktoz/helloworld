@@ -16,9 +16,9 @@ services:
     #command: --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
-    networks: [springnet]
+    networks: [ springnet ]
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -30,12 +30,12 @@ services:
   redis:
     image: redis:7.2
     container_name: redis
-    command: ["redis-server", "--appendonly", "yes"]
+    command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - redis_data:/data
-    networks: [springnet]
+    networks: [ springnet ]
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -51,7 +51,7 @@ services:
     container_name: adminapp
     build:
       context: ./adminapp
-    networks: [springnet]
+    networks: [ springnet ]
     expose:
       - "8080"       # internal-only
     depends_on:
@@ -78,7 +78,7 @@ services:
       context: ./todoistapp
     ports:
       - "8080:8080"  # exposed to host
-    networks: [springnet]
+    networks: [ springnet ]
     depends_on:
       adminapp:
         condition: service_started
