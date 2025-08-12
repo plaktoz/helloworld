@@ -1,6 +1,5 @@
 package com.plaktoz.todoist.todoistapp.service;
 
-import com.plaktoz.todoist.todoistapp.controller.TaskController;
 import com.plaktoz.todoist.todoistapp.domain.TaskEntity;
 import com.plaktoz.todoist.todoistapp.repository.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -55,7 +54,7 @@ public class TaskService {
     @Transactional(readOnly = true)
     public TaskEntity getTask(Long id) {
         return repo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Task not found: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Task not found: " + id));
     }
 
     /**
@@ -63,11 +62,12 @@ public class TaskService {
      */
     @Transactional(readOnly = true)
     public List<TaskEntity> listTasks() {
-        log.info("List entity");return repo.findAll();
+        log.info("List entity");
+        return repo.findAll();
     }
 
     /**
-     * Update (partial)
+     * Update
      */
     public TaskEntity updateTask(Long id, @Valid TaskEntity changes) {
         log.info("Update entity");
