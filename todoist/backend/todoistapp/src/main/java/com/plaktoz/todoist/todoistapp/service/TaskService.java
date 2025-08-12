@@ -1,5 +1,6 @@
 package com.plaktoz.todoist.todoistapp.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plaktoz.todoist.todoistapp.domain.TaskEntity;
 import com.plaktoz.todoist.todoistapp.repository.TaskRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -8,10 +9,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,12 +30,34 @@ public class TaskService {
     private static final Logger log
             = LoggerFactory.getLogger(TaskService.class);
 
+    private static final String KEY_PREFIX = "task:";           // task:{id}
+    private static final long TTL_SECONDS = 86400;              // 24 hours
+
     private final TaskRepository repo;
 
-    public TaskService(TaskRepository repo) {
+    @Autowired
+    private RedisTemplate<String, String> redis;
+    private final ObjectMapper mapper;
+
+    public TaskService(TaskRepository repo, RedisTemplate<String, String> redis, ObjectMapper mapper) {
         this.repo = repo;
+        this.redis = redis;
+        this.mapper = mapper;
     }
 
+    private String key(Long id) { return KEY_PREFIX + id; }
+
+    private void cachePut(TaskEntity t) {
+        try {
+            String k = key(t.getId());
+            String json = mapper.writeValueAsString(t);
+            log.debug("Redis put task with key {}", k);
+            redis.opsForValue().set(k, json, Duration.ofSeconds(TTL_SECONDS));
+        } catch (Exception e) {
+            // log and continue; DB remains source of truth
+            log.warn("Failed to cache task {}", t.getId(), e);
+        }
+    }
     /**
      * Create
      */
@@ -40,12 +66,13 @@ public class TaskService {
             LocalDateTime startDate,
             LocalDateTime enDate
     ) {
-        log.info("Create entity");
         TaskEntity t = new TaskEntity();
         t.setTaskSummary(taskSummary);
         t.setStartDate(startDate);
         t.setEnDate(enDate);
-        return repo.save(t); // within a write tx
+        TaskEntity saved = repo.save(t);
+        cachePut(saved);
+        return saved;
     }
 
     /**
@@ -53,8 +80,18 @@ public class TaskService {
      */
     @Transactional(readOnly = true)
     public TaskEntity getTask(Long id) {
-        return repo.findById(id)
+        String k = key(id);
+        String cached = redis.opsForValue().get(k);
+        if (cached != null) {
+            try { return mapper.readValue(cached, TaskEntity.class); }
+            catch (Exception ignored) { /* fall through to DB */
+                log.warn("Failed to cache task {}", id, ignored);
+            }
+        }
+        TaskEntity db = repo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found: " + id));
+        cachePut(db); // populate cache
+        return db;
     }
 
     /**

@@ -17,7 +17,8 @@ spring:
 app:
   webclient:
     callapp2: ${APP_WEBCLIENT_CALLAPP2:http://adminapp:8080/hello}
-
+  redis:
+    enabled: true
 #logging:
 #  level:
 #    root: INFO

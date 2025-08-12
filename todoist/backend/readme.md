@@ -23,17 +23,21 @@ Use the following single-line terminal command to:
 5. Wait 5 seconds
 6. Curl the endpoint to verify the app is working
 
+# Freq used commands
 ```bash
-# Docker commands
-## quick update for only todoistapp container
-mvn install -pl todoistapp -am;\
+mvn install -pl todoistapp -am -DskipTests;\
 docker container stop todoistapp;\
 docker container rm todoistapp;\
 docker image rm todoistapp-image;\
 docker-compose up -d --no-deps todoistapp;\
+sleep 10;
 curl http://localhost:8080/api/tasks/1;\
 echo done;
+```
 
+# Docker
+```bash
+# Docker commands
 ## build & start
 docker compose up --build -d
 
@@ -45,10 +49,6 @@ docker compose down
 
 ## nuke everything including data volumes
 docker compose down --volumes --remove-orphans
-
-## MYSQL
-## login to mssql in docker
-docker exec -it mysql mysql -utodo -ptodo_pwd -D todoist
 ```
 # Maven build
 ```bash
@@ -59,6 +59,24 @@ mvn clean install
 mvn install -pl commonlib -am
 mvn install -pl todoistapp -am
 mvn install -pl adminapp -am
+```
+
+# MYSQ:
+```bash
+## MYSQL
+## login to mssql in docker
+docker exec -it mysql mysql -utodo -ptodo_pwd -D todoist
+use todoist;
+show tables;
+describe task;
+select * from task;
+```
+
+# REDIS
+```bash
+docker exec -it redis redis-cli
+KEYS "task:1"
+get "task:1"
 ```
 
 # Curl

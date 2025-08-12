@@ -10,22 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@SpringBootTest(
-        properties = {
-                // Force H2 dialect directly
-                "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-                "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1",
-                "spring.datasource.driver-class-name=org.h2.Driver",
-                "spring.datasource.username=sa",
-                "spring.datasource.password=",
-                // Disable Redis autoconfig
-                "spring.autoconfigure.exclude=" +
-                        "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
-                        "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration"
-        }
-)
-// @ComponentScan(basePackages = {"com.plaktoz.todoist.todoistapp", "com.plaktoz.todoist.todoistapp.service"})
-// @EntityScan(basePackages = "com.plaktoz.todoist.todoistapp.task")
+@SpringBootTest()
 @ActiveProfiles("test") // will also load application-test.yml if present
 class TodoistappApplicationTests {
 
