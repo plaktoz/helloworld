@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest()
-@ActiveProfiles("test") // will also load application-test.yml if present
+@ActiveProfiles("test") // will also load application-test.yml if present (does not work)
 class TodoistappApplicationTests {
 
     @Autowired

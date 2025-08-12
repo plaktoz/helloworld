@@ -13,13 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 
 @Service
@@ -35,9 +32,9 @@ public class TaskService {
 
     private final TaskRepository repo;
 
-    @Autowired
-    private RedisTemplate<String, String> redis;
+    private final RedisTemplate<String, String> redis;
     private final ObjectMapper mapper;
+
 
     public TaskService(TaskRepository repo, RedisTemplate<String, String> redis, ObjectMapper mapper) {
         this.repo = repo;
@@ -45,7 +42,9 @@ public class TaskService {
         this.mapper = mapper;
     }
 
-    private String key(Long id) { return KEY_PREFIX + id; }
+    private String key(Long id) {
+        return KEY_PREFIX + id;
+    }
 
     private void cachePut(TaskEntity t) {
         try {
@@ -58,6 +57,20 @@ public class TaskService {
             log.warn("Failed to cache task {}", t.getId(), e);
         }
     }
+
+    private void cacheUpdate(TaskEntity t) {
+        try {
+            String k = key(t.getId());
+            String json = mapper.writeValueAsString(t);
+            log.debug("Redis update task with key {}", k);
+            redis.opsForValue()
+                    .setIfPresent(k, json, Duration.ofSeconds(TTL_SECONDS));
+        } catch (Exception e) {
+            // log and continue; DB remains source of truth
+            log.warn("Failed to cache task {}", t.getId(), e);
+        }
+    }
+
     /**
      * Create
      */
@@ -66,11 +79,14 @@ public class TaskService {
             LocalDateTime startDate,
             LocalDateTime enDate
     ) {
+        log.debug("Create task");
         TaskEntity t = new TaskEntity();
         t.setTaskSummary(taskSummary);
         t.setStartDate(startDate);
         t.setEnDate(enDate);
+        log.debug("Saving record");
         TaskEntity saved = repo.save(t);
+        log.debug("Putting cache");
         cachePut(saved);
         return saved;
     }
@@ -80,18 +96,39 @@ public class TaskService {
      */
     @Transactional(readOnly = true)
     public TaskEntity getTask(Long id) {
-        String k = key(id);
-        String cached = redis.opsForValue().get(k);
-        if (cached != null) {
-            try { return mapper.readValue(cached, TaskEntity.class); }
-            catch (Exception ignored) { /* fall through to DB */
-                log.warn("Failed to cache task {}", id, ignored);
-            }
+        log.debug("Get task");
+        TaskEntity cache = getTaskFromCache( id);
+        if(cache !=null){
+            return cache;
         }
+//        String k = key(id);
+//        String cached = redis.opsForValue().get(k);
+//        if (cached != null) {
+//            try {
+//                log.debug("Read task from cache {}", id);
+//                return mapper.readValue(cached, TaskEntity.class);
+//            } catch (Exception ignored) { /* fall through to DB */
+//                log.warn("Failed to cache task {}", id, ignored);
+//            }
+//        }
         TaskEntity db = repo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found: " + id));
         cachePut(db); // populate cache
         return db;
+    }
+
+    private TaskEntity getTaskFromCache(Long id){
+        String k = key(id);
+        String cached = redis.opsForValue().get(k);
+        if (cached != null) {
+            try {
+                log.debug("Read task from cache {}", id);
+                return mapper.readValue(cached, TaskEntity.class);
+            } catch (Exception ignored) { /* fall through to DB */
+                log.warn("Failed to cache task {}", id, ignored);
+            }
+        }
+        return null;
     }
 
     /**
@@ -112,6 +149,7 @@ public class TaskService {
         if (changes.getTaskSummary() != null) current.setTaskSummary(changes.getTaskSummary());
         if (changes.getStartDate() != null) current.setStartDate(changes.getStartDate());
         if (changes.getEnDate() != null) current.setEnDate(changes.getEnDate());
+        cacheUpdate(changes);
         return repo.save(current); // still within the same tx
     }
 
@@ -123,6 +161,8 @@ public class TaskService {
         if (!repo.existsById(id)) {
             throw new EntityNotFoundException("Task not found: " + id);
         }
+        String k = key(id);
+        redis.opsForValue().getAndDelete(k);
         repo.deleteById(id); // write tx
     }
 }

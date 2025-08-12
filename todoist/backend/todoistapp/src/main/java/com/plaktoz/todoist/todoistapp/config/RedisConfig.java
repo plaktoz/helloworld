@@ -1,10 +1,8 @@
 package com.plaktoz.todoist.todoistapp.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.plaktoz.todoist.todoistapp.controller.ApiController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,16 +29,18 @@ public class RedisConfig {
     @Bean
     public ObjectMapper redisObjectMapper() {
         log.info("Create redisObjectMapper");
-        return new ObjectMapper()
-                .findAndRegisterModules(); // JavaTimeModule for LocalDateTime
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper
+                .findAndRegisterModules()
+                .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);// JavaTimeModule for LocalDateTime
+//                .activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL);
     }
 
     @Primary
     @Bean
-//    @ConditionalOnBean(org.springframework.data.redis.connection.RedisConnectionFactory.class)
-//    @ConditionalOnProperty(name = "app.redis.enabled", havingValue = "true")
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory cf) {
         log.info("Create redisTemplate");
+
         RedisTemplate<String, String> template = new RedisTemplate<>();
         template.setConnectionFactory(cf);
 
@@ -50,7 +50,8 @@ public class RedisConfig {
         template.setHashKeySerializer(stringSerializer);
 
         // Store values as JSON instead of Java serialization
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper());
+
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 

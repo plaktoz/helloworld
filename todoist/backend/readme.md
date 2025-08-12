@@ -61,7 +61,7 @@ mvn install -pl todoistapp -am
 mvn install -pl adminapp -am
 ```
 
-# MYSQ:
+# MYSQL
 ```bash
 ## MYSQL
 ## login to mssql in docker
