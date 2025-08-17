@@ -79,6 +79,21 @@ KEYS "task:1"
 get "task:1"
 ```
 
+# KAFKA produce and consume message
+```bash
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic task_topic --partitions 1 --replication-factor 1
+WARNING: Due to limitations in metric names, topics with a period ('.') or underscore ('_') could collide. To avoid issues it is best to use either, but not both.
+Created topic task_topic.
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list                                                        
+my_new_topic
+
+docker exec -it kafka bash
+/usr/bin/kafka-console-producer --bootstrap-server localhost:9092 --topic task_topic
+/usr/bin/kafka-console-consumer --bootstrap-server localhost:9092 --topic task_topic
+
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+```
+
 # Curl
 ```bash
 # Task CURL command

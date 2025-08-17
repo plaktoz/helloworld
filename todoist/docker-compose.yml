@@ -1,6 +1,23 @@
 #version: "3.8"
 
 services:
+  # WEB TIER (Public)
+  web:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/static:/usr/share/nginx/html
+      - ./infra/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - public_network  # No DB access!
+      - app_network
+    depends_on:
+      adminapp:
+        condition: service_started
+      todoistapp:
+        condition: service_started
   # =========================
   # Datastores (internal)
   # =========================
@@ -16,7 +33,7 @@ services:
     #command: --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
-    networks: [ springnet ]
+    networks: [ database_network ]
     healthcheck:
       test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent" ]
       interval: 10s
@@ -33,7 +50,7 @@ services:
     command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - redis_data:/data
-    networks: [ springnet ]
+    networks: [ database_network ]
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
@@ -44,14 +61,62 @@ services:
       - "6379:6379"
 
   # =========================
+  # Kafka + Zookeeper
+  # =========================
+# Single-broker Kafka in KRaft mode (no Zookeeper)
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: kafka
+    networks: [ app_network ]
+    ports:
+      - "9092:9092"      # inside-docker clients via kafka:9092
+      - "29092:29092"    # host access via localhost:29092
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # Kafka 3.8+ creates cluster ID automatically on first start. For older versions, you'd format storage.
+
+  # Helper script will run in the same container
+  kafka-init:
+    image: apache/kafka:3.8.0
+    container_name: kafka-init
+    networks: [app_network]
+    volumes:
+      - ./infra/kafka-init.sh:/kafka-init.sh
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      while ! /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list; do
+        echo 'Waiting for Kafka to be ready...'
+        sleep 5
+      done
+      /kafka-init.sh
+      exit 0
+      "
+    restart: on-failure
+
+  # =========================
   # Apps
   # =========================
   adminapp:
     image: adminapp-image
     container_name: adminapp
     build:
-      context: ./adminapp
-    networks: [ springnet ]
+      context: ./backend/adminapp
+    networks:
+      - database_network
+      - app_network
     expose:
       - "8080"       # internal-only
     depends_on:
@@ -75,10 +140,12 @@ services:
     image: todoistapp-image
     container_name: todoistapp
     build:
-      context: ./todoistapp
+      context: ./backend/todoistapp
     ports:
       - "8080:8080"  # exposed to host
-    networks: [ springnet ]
+    networks:
+      - database_network
+      - app_network
     depends_on:
       adminapp:
         condition: service_started
@@ -97,8 +164,16 @@ services:
       APP_WEBCLIENT_CALLAPP2: http://adminapp:8080/hello
 
 networks:
-  springnet:
+#  springnet:
+#    driver: bridge
+  public_network:    # Web tier only (exposes ports)
     driver: bridge
+  app_network:   # App tier only (no inbound access)
+    driver: bridge
+    # internal: true # uncomment to allow public access
+  database_network:  # DB tier only (app-only access)
+    driver: bridge
+    # internal: true # uncomment to allow public access
 
 volumes:
   mysql_data:
