@@ -1,3 +1,7 @@
 {
-    "java.format.settings.url": "eclipse-formatter.xml"
+  "java.format.settings.url": "eclipse-formatter.xml",
+  "java.project.sourcePaths": [
+    "todoistapp/src/main/java/com/plaktoz/todoist/todoistapp",
+    "todoistapp/src"
+  ]
 }
