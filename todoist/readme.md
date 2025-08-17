@@ -97,6 +97,12 @@ docker exec -it kafka bash
 # Curl
 ```bash
 # Task CURL command
+
+# with nginx
+curl http://localhost/api/todoistapp/api/tasks
+curl http://localhost/api/todoistapp/api/call-app2
+
+# without nginx
 # test command
 curl http://localhost:8080/api/call-app2
 docker exec -it app1 curl http://app2:8080/hello
