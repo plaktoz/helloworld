@@ -14,6 +14,40 @@ spring:
       host: ${SPRING_DATA_REDIS_HOST:redis}
       port: ${SPRING_DATA_REDIS_PORT:6379}
 
+management:
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      hostedApi:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20            # recent calls considered
+        permitted-number-of-calls-in-half-open-state: 3
+        failure-rate-threshold: 50         # % failures to open the breaker
+        wait-duration-in-open-state: 30s   # how long to stay open before half-open
+        record-exceptions:
+          - java.io.IOException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+          - org.springframework.web.reactive.function.client.WebClientResponseException
+  timelimiter:
+    instances:
+      hostedApi:
+        timeout-duration: 2s               # fail fast if slower than 2s
+        cancel-running-future: true
+  retry:
+    instances:
+      hostedApi:
+        max-attempts: 3
+        wait-duration: 200ms               # backoff between attempts
+        retry-exceptions:
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+          - java.io.IOException
+  bulkhead:
+    instances:
+      hostedApi:
+        max-concurrent-calls: 50
+        max-wait-duration: 0               # 0 = fail immediately when saturated
 
 
 app:

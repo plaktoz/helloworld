@@ -25,7 +25,9 @@ Use the following single-line terminal command to:
 
 # Freq used commands
 ```bash
+cd backend;\
 mvn install -pl todoistapp -am -DskipTests;\
+cd ..;\
 docker container stop todoistapp;\
 docker container rm todoistapp;\
 docker image rm todoistapp-image;\
@@ -97,6 +99,12 @@ docker exec -it kafka bash
 # Curl
 ```bash
 # Task CURL command
+
+# with nginx
+curl http://localhost/api/todoistapp/api/tasks
+curl http://localhost/api/todoistapp/api/call-app2
+
+# without nginx
 # test command
 curl http://localhost:8080/api/call-app2
 docker exec -it app1 curl http://app2:8080/hello

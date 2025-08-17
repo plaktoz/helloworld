@@ -1,6 +1,11 @@
 package com.plaktoz.todoist.todoistapp.controller;
 
 import com.plaktoz.todoist.todoistapp.config.WebClientProperties;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +18,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api")
 public class ApiController {
 
+    public static final java.lang.String BACKEND = "hostedApi";
     private final WebClient webClient;
     private final WebClientProperties props;
 
@@ -24,11 +30,21 @@ public class ApiController {
         this.props = props;
     }
 
+    @CircuitBreaker(name = BACKEND, fallbackMethod = "helloFallback")
+    @RateLimiter(name = BACKEND)
+    @Bulkhead(name = BACKEND, fallbackMethod = "helloFallback")
+    @Retry(name = BACKEND)
+    @TimeLimiter(name = BACKEND)
     @GetMapping("/")
     public String hello() {
         return "Hello, World!";
     }
 
+    @CircuitBreaker(name = BACKEND, fallbackMethod = "helloFallback")
+    @RateLimiter(name = BACKEND)
+    @Bulkhead(name = BACKEND, fallbackMethod = "helloFallback")
+    @Retry(name = BACKEND)
+//    @TimeLimiter(name = BACKEND)
     @GetMapping("/call-app2")
     public Mono<String> callApp2() {
         log.info("Calling app2 at: {}", props.getCallapp2());
@@ -36,5 +52,12 @@ public class ApiController {
                 .uri(props.getCallapp2())
                 .retrieve()
                 .bodyToMono(String.class);
+    }
+
+    // Fallback signature must match original method + Throwable at end
+    private Mono<String> helloFallback(Throwable t) {
+        log.warn("Falling back for /hello due to: {}", t.toString());
+        // Safe default, cached value, or message; keep it quick
+        return Mono.just("Hello (fallback)");
     }
 }

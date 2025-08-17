@@ -39,9 +39,6 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
-
-
-        <!-- Resilience4j Spring Boot 3 starter (circuit breaker, retry, time limiter, bulkhead) -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-spring-boot3</artifactId>
