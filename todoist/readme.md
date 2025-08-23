@@ -72,6 +72,10 @@ use todoist;
 show tables;
 describe task;
 select * from task;
+
+## check keycloak
+docker exec -it mysql mysql -uroot -proot_pwd -e "SHOW DATABASES LIKE 'keycloakdb';"
+docker exec -it mysql mysql -uroot -proot_pwd -e "SELECT user,host FROM mysql.user WHERE user='keycloakdbuser';"
 ```
 
 # REDIS
