@@ -127,7 +127,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      keyloak:
+      keycloak:
         condition: service_healthy
     environment:
       # --- JDBC ---
@@ -159,7 +159,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      keyloak:
+      keycloak:
         condition: service_healthy
     environment:
       # --- If this app also needs DB/Redis, wire it too ---
