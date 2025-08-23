@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: TodoistAdminApplication
+
+management:
+  endpoints.web.exposure.include: health,info,metrics,prometheus
