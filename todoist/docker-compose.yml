@@ -170,6 +170,13 @@ services:
       SPRING_DATA_REDIS_PORT: "6379"
       # --- Internal call to adminapp ---
       APP_WEBCLIENT_CALLAPP2: http://adminapp:8080/hello
+    healthcheck:
+      # not working even thought this will exit with 0
+      test: ["CMD", "curl --fail --silent http://localhost:8080/actuator/health | grep UP >/dev/null;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   # =========================
   # Identity (Keycloak)
@@ -187,7 +194,6 @@ services:
       KC_DB_URL: jdbc:mysql://mysql:3306/keycloakdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       KC_DB_USERNAME: keycloakdbuser
       KC_DB_PASSWORD: keycloakdbuserpwd
-
       KC_HEALTH_ENABLED: "true"
     networks:
       - app_network
@@ -199,7 +205,8 @@ services:
     ports:
       - "8081:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/realms/master/.well-known/openid-configuration >/dev/null"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e 'GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
+#      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8081/realms/master/.well-known/openid-configuration >/dev/null"]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -223,8 +230,8 @@ services:
       timeout: 5s
       retries: 20
       start_period: 20s
-    # ports:
-    #   - "27017:27017"
+    ports:
+      - "27017:27017"
 
 networks:
   public_network:    # Web tier only (exposes ports)
