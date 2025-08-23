@@ -13,6 +13,8 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:redis}
       port: ${SPRING_DATA_REDIS_PORT:6379}
+    mongodb:
+      uri: mongodb://mongoadmin:mongopwd@mongo:27017/todoist?authSource=admin
 
 management:
   endpoints.web.exposure.include: health,info,metrics,prometheus
@@ -55,6 +57,3 @@ app:
     callapp2: ${APP_WEBCLIENT_CALLAPP2:http://adminapp:8080/hello}
   redis:
     enabled: true
-#logging:
-#  level:
-#    root: INFO
