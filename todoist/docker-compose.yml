@@ -2,6 +2,7 @@
 
 services:
   # WEB TIER (Public)
+  # TODO Docker Compose Watch to autoreload changes
   web:
     image: nginx:alpine
     container_name: nginx
@@ -20,6 +21,14 @@ services:
         condition: service_started
       keycloak:
         condition: service_healthy
+  openssl:
+    image: openssl-image
+    container_name: opensslapp
+    build:
+      context: ./infra/openssl/
+    volumes:
+      - ./infra/openssl/certs:/certs/
+
   # =========================
   # Datastores (internal)
   # =========================

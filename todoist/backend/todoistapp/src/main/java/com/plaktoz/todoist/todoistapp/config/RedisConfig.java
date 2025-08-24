@@ -22,19 +22,19 @@ public class RedisConfig {
         System.out.println("app.redis.enabled = " + env.getProperty("app.redis.enabled"));
     }
 
-    /***
-     * Can move this out
-     * @return
-     */
-    @Bean
-    public ObjectMapper redisObjectMapper() {
-        log.info("Create redisObjectMapper");
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper
-                .findAndRegisterModules()
-                .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);// JavaTimeModule for LocalDateTime
-//                .activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL);
-    }
+//    /***
+//     * Can move this out
+//     * @return
+//     */
+//    @Bean
+//    public ObjectMapper redisObjectMapper() {
+//        log.info("Create redisObjectMapper");
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        return objectMapper
+//                .findAndRegisterModules()
+//                .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);// JavaTimeModule for LocalDateTime
+////                .activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL);
+//    }
 
     @Primary
     @Bean
@@ -50,7 +50,7 @@ public class RedisConfig {
         template.setHashKeySerializer(stringSerializer);
 
         // Store values as JSON instead of Java serialization
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper());
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(new JsonConfig().jsonObjectMapper());
 
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
