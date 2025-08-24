@@ -21,14 +21,15 @@ services:
         condition: service_started
       keycloak:
         condition: service_healthy
-  openssl:
-    image: openssl-image
-    container_name: opensslapp
-    build:
-      context: ./infra/openssl/
-    volumes:
-      - ./infra/openssl/certs:/certs/
 
+  cert-generator:
+    image: alpine:latest
+    container_name: cert_generator
+    volumes:
+      - ./infra/openssl/certs:/certs
+      - ./infra/openssl/generate-certs.sh:/generate-certs.sh
+    command: /generate-certs.sh
+    restart: "no"
   # =========================
   # Datastores (internal)
   # =========================
