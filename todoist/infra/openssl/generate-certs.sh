@@ -1,4 +1,5 @@
 #!/bin/sh
+# DEPRECATED and included within docker compose
 apk add --no-cache openssl
 mkdir -p /certs
 
