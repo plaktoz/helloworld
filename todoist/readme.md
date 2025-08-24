@@ -85,6 +85,15 @@ KEYS "task:1"
 get "task:1"
 ```
 
+# MONGODB
+```bash
+docker exec -it mongo mongosh \
+  --username mongoadmin \
+  --password mongopwd \
+  --authenticationDatabase admin
+## common clis
+```
+
 # KAFKA produce and consume message
 ```bash
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic task_topic --partitions 1 --replication-factor 1
@@ -107,6 +116,10 @@ docker exec -it kafka bash
 # with nginx
 curl http://localhost/api/todoistapp/api/tasks
 curl http://localhost/api/todoistapp/api/call-app2
+
+curl -X POST http://localhost/api/todoistapp/api/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"taskSummary":"demo","startDate":"2025-08-10T10:00:00"}'
 
 # without nginx
 # test command

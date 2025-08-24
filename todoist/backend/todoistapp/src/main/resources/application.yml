@@ -14,7 +14,7 @@ spring:
       host: ${SPRING_DATA_REDIS_HOST:redis}
       port: ${SPRING_DATA_REDIS_PORT:6379}
     mongodb:
-      uri: mongodb://mongoadmin:mongopwd@mongo:27017/todoist?authSource=admin
+      uri: mongodb://mongoadmin:mongopwd@mongo:27017/chat?authSource=admin
 
 management:
   endpoints.web.exposure.include: health,info,metrics,prometheus
