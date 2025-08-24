@@ -199,11 +199,11 @@ services:
       KC_HEALTH_ENABLED: "true"
       KC_HTTP_RELATIVE_PATH: /auth
       KC_PROXY_HEADERS: "xforwarded"
-      KC_HOSTNAME_PORT: "8080"
-      KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_DEBUG: "false"
-      KC_LOG_LEVEL: "DEBUG"
+#      KC_HOSTNAME_PORT: "8080"
+#      KC_HTTP_ENABLED: "true"
+#      KC_HOSTNAME_STRICT: "false"
+#      KC_HOSTNAME_DEBUG: "false"
+      KC_LOG_LEVEL: "INFO"
     networks:
       - app_network
       - public_network
